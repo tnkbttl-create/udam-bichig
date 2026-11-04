@@ -1,0 +1,11 @@
+{
+  "name": "udam-bichig-pwa",
+  "version": "20.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node core.test.cjs && node ui.test.cjs"
+  },
+  "devDependencies": {
+    "linkedom": "0.18.12"
+  }
+}

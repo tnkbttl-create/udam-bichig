@@ -1,6 +1,6 @@
 /* Network-first application shell: always prefer newest deployed HTML. */
-const CACHE = 'udam-bichig-shell-v19-pages';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './offline.html'];
+const CACHE = 'udam-bichig-shell-v20-1';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './offline.html', './core.js'];
 self.addEventListener('install', event => { event.waitUntil((async()=>{
   const cache=await caches.open(CACHE);
   await Promise.allSettled(SHELL.map(async path=>{
