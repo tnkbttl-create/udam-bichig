@@ -4,9 +4,9 @@ Frontend: GitHub Pages, main branch / root. Supabase project remains hadrcmqgeze
 
 ## Current blockers
 
-Supabase connector cannot access this project. Dashboard login requires a user CAPTCHA. No SQL, Auth setting, RLS policy, secret or Edge Function has been changed. Existing RLS has NOT been verified. Do not describe privacy as fully audited.
+Supabase connector cannot access this project. Dashboard login requires a user CAPTCHA. Schema and policies are now present. Browser SQL regression checks passed for pending registration, cross-account isolation, unapproved access denial, self approval denial, immutable request participants, target-only acceptance, revocation, and service-only AI quota. All test users and data were rolled back. Auth SMS settings, provider credentials and BAZE secrets still need verification. This is not a guarantee against every possible security issue.
 
-BAZE key in the supplied screenshot is masked. No usable key has been received and no BAZE model call has been made. This ChatGPT Work session has not changed its underlying model provider. CLI configuration in the provider's setup prompt applies to a separate Codex CLI harness, not to this running session.
+BAZE key in the supplied screenshot is masked. No usable key has been received and no BAZE model call has been made. The lineage-ai-review Edge Function has been deployed. It validates the key against the live model catalog; BAZE_MODEL is optional when a supported standard model is returned. This ChatGPT Work session has not changed its underlying model provider. CLI configuration in the provider's setup prompt applies to a separate Codex CLI harness, not to this running session.
 
 ## Before enabling backend features
 

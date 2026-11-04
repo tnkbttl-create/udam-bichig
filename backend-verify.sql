@@ -1,0 +1,34 @@
+begin;
+do $test$
+declare a uuid:=gen_random_uuid(); b uuid:=gen_random_uuid(); denied uuid:=gen_random_uuid(); rid uuid; n int; blocked boolean;
+begin
+insert into auth.users(id,email,email_confirmed_at) values(a,'udam-test-a-'||a||'@example.invalid',now()),(b,'udam-test-b-'||b||'@example.invalid',now()),(denied,'udam-test-denied-'||denied||'@example.invalid',now());
+if exists(select 1 from public.user_approvals where user_id in(a,b,denied) and is_approved) then raise exception 'FAIL: registration self approved';end if;
+update public.user_approvals set is_approved=true where user_id in(a,b);
+insert into public.family_records(user_id,people) values(a,'[]'),(b,'[]');
+insert into public.lineage_profiles(user_id,clan_name,display_name,is_discoverable,allow_contact_requests) values(a,'Udam test only','Test A',true,true),(b,'Udam test only','Test B',true,true);
+perform set_config('request.jwt.claims',jsonb_build_object('sub',a,'role','authenticated')::text,true);
+set local role authenticated;
+if public.udam_is_admin() or not public.udam_is_approved() then raise exception 'FAIL: A authorization';end if;
+select count(*) into n from public.family_records where user_id=b;
+if n<>0 then raise exception 'FAIL: cross-account family read';end if;
+update public.user_approvals set is_approved=true where user_id=a;
+get diagnostics n=row_count;if n<>0 then raise exception 'FAIL: self approval write';end if;
+insert into public.lineage_requests(requester_user_id,target_user_id) values(a,b) returning id into rid;
+blocked:=false;begin update public.lineage_requests set status='accepted' where id=rid;exception when raise_exception then blocked:=true;end;if not blocked then raise exception 'FAIL: requester accepted own request';end if;
+perform set_config('request.jwt.claims',jsonb_build_object('sub',b,'role','authenticated')::text,true);
+update public.lineage_requests set status='accepted' where id=rid;get diagnostics n=row_count;if n<>1 then raise exception 'FAIL: target acceptance';end if;
+perform public.get_connected_lineage(a);
+blocked:=false;begin update public.lineage_requests set target_user_id=b where id=rid;exception when raise_exception then blocked:=true;end;if not blocked then raise exception 'FAIL: participants mutable';end if;
+update public.lineage_requests set status='revoked' where id=rid;
+blocked:=false;begin perform public.get_connected_lineage(a);exception when raise_exception then blocked:=true;end;if not blocked then raise exception 'FAIL: revoked sharing';end if;
+perform set_config('request.jwt.claims',jsonb_build_object('sub',denied,'role','authenticated')::text,true);
+if public.udam_is_approved() then raise exception 'FAIL: unapproved authorization';end if;
+select count(*) into n from public.family_records;if n<>0 then raise exception 'FAIL: unapproved family access';end if;
+blocked:=false;begin insert into public.lineage_profiles(user_id,clan_name) values(denied,'Denied');exception when insufficient_privilege then blocked:=true;end;if not blocked then raise exception 'FAIL: unapproved profile write';end if;
+blocked:=false;begin perform public.consume_lineage_ai_budget(denied);exception when insufficient_privilege then blocked:=true;end;if not blocked then raise exception 'FAIL: client can change AI quota';end if;
+reset role;
+if has_table_privilege('anon','public.family_records','select') then raise exception 'FAIL: anonymous family privilege';end if;
+end $test$;
+rollback;
+select 'PASS: pending registration; approved and unapproved RLS; cross-account isolation; self approval blocked; participant and status protection; sharing revocation; service-only AI quota. All test identities rolled back.' as verification;
