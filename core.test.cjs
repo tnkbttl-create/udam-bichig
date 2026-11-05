@@ -17,3 +17,5 @@ assert(C.dateError({birthYear:'2001',birthMonth:'2',birthDay:'29'}));
 assert.equal(C.dateError({birthYear:'1995'}),'');
 assert.equal(C.dateError({birthMonth:'2',birthDay:'29'}),'');
 assert(!C.compatible({name:'Test',birthMonth:'1'},{name:'Test',birthMonth:'2'}));
+
+const provenance=C.merge([p('r1','Same',[],{externalRefs:[{ownerId:'one',personId:'x'}]}),p('r2','Same',[],{externalRefs:[{ownerId:'two',personId:'y'}]})],'r1','r2');assert.equal(provenance[0].externalRefs.length,2);
