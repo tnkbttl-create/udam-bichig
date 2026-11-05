@@ -1,3 +1,13 @@
+# Current status: v22
+
+BAZE_API_KEY is stored in Supabase Secrets; an actual BAZE response was shown by the owner. Never put this key in the static app or repository.
+
+security-sharing-v22.sql is applied after the v20 schema. backend-verify-v22.sql passed with all synthetic users rolled back.
+
+See RELEASE-v22.md for current features and remaining SMS/SMTP provider setup. Email confirmation is enabled. E-Mongolia is not used.
+
+## Earlier setup reference
+
 # Udam Bichig v20: remaining backend work
 
 Frontend: GitHub Pages, main branch / root. Supabase project remains hadrcmqgezevqwyrxpqt; no data migration to an unrelated project.

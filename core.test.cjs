@@ -11,3 +11,9 @@ assert(C.compatible(p('a','Туул',[],{birthYear:'1969'}),p('b','Туул')));
 assert.deepEqual(C.normalize([p('a','A',['missing'])])[0].parentIds,[]);
 const pairs=[p('a','A',[],{partnerId:'b'}),p('b','B',[],{partnerId:'a'})];assert.equal(C.layout(pairs).edges.length,1);
 console.log('PASS: merge identity rewrites, co-parent privacy, conflicting years, cycle prevention, repeated ancestors, all edges, age checks, mutual partner edge');
+
+assert.equal(C.dateError({birthYear:'2000',birthMonth:'2',birthDay:'29'}),'');
+assert(C.dateError({birthYear:'2001',birthMonth:'2',birthDay:'29'}));
+assert.equal(C.dateError({birthYear:'1995'}),'');
+assert.equal(C.dateError({birthMonth:'2',birthDay:'29'}),'');
+assert(!C.compatible({name:'Test',birthMonth:'1'},{name:'Test',birthMonth:'2'}));
