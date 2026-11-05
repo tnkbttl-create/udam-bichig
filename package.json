@@ -1,6 +1,6 @@
 {
   "name": "udam-bichig-pwa",
-  "version": "22.0.0",
+  "version": "23.0.0",
   "private": true,
   "scripts": {
     "test": "node core.test.cjs && node ui.test.cjs"
