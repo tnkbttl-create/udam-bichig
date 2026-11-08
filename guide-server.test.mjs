@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+let handler,calls=[],approved=true;
+globalThis.Deno={env:{get:k=>({SUPABASE_URL:'https://test.invalid',SUPABASE_ANON_KEY:'test',SUPABASE_SERVICE_ROLE_KEY:'test',BAZE_API_KEY:'test',BAZE_MODEL:'existing-model'})[k]},serve:f=>handler=f};
+globalThis.fetch=async(url,options={})=>{calls.push({url,body:options.body});if(url.endsWith('/auth/v1/user'))return Response.json({id:'test-user',email_confirmed_at:'yes'});if(url.includes('user_approvals'))return Response.json([{is_approved:approved}]);if(url.includes('consume_lineage_ai_budget'))return Response.json(true);if(url.endsWith('/models/'))return Response.json({data:[{id:'existing-model'}]});if(url.endsWith('/responses/'))return Response.json({output:[{content:[{type:'output_text',text:'Зөвлөмж'}]}]});throw Error('Unexpected upstream')};
+await import('./lineage-ai-review.ts');
+const request=body=>handler(new Request('https://test.invalid',{method:'POST',headers:{origin:'https://tnkbttl-create.github.io',authorization:'Bearer test'},body:JSON.stringify(body)}));
+let r=await request({topic:'benefits'});assert.equal(r.status,200);assert.deepEqual(await r.json(),{text:'Зөвлөмж',model:'existing-model',provider:'BAZE AI'});let upstream=JSON.parse(calls.find(c=>c.url.endsWith('/responses/')).body);assert.equal(upstream.model,'existing-model');assert(!upstream.input.includes('test-user'));
+calls=[];r=await request({topic:'unknown'});assert.equal(r.status,400);assert(!calls.some(c=>c.url.includes('api.baze.co')));r=await request({topic:'benefits',privateName:'private'});assert.equal(r.status,400);
+approved=false;r=await request({topic:'benefits'});assert.equal(r.status,403);approved=true;r=await request({graph:[{id:'P1',parents:[],birthYear:null,partner:null}]});assert.equal(r.status,200);assert.deepEqual(await r.json(),{review:'Зөвлөмж'});
+console.log('PASS BAZE guide: existing model/key path, allowlisted topics, no private input, approval check, graph review preserved');
