@@ -19,3 +19,7 @@ assert.equal(C.dateError({birthMonth:'2',birthDay:'29'}),'');
 assert(!C.compatible({name:'Test',birthMonth:'1'},{name:'Test',birthMonth:'2'}));
 
 const provenance=C.merge([p('r1','Same',[],{externalRefs:[{ownerId:'one',personId:'x'}]}),p('r2','Same',[],{externalRefs:[{ownerId:'two',personId:'y'}]})],'r1','r2');assert.equal(provenance[0].externalRefs.length,2);
+
+const unit=[p('u1','Parent A',[],{partnerId:'u2'}),p('u2','Parent B',[],{partnerId:'u1'}),p('u3','Child 1',['u1','u2']),p('u4','Child 2',['u1','u2'])];
+for(const horizontal of [false,true]){const layout=C.layout(unit,true);if(horizontal)for(const [id,pos]of layout.positions)layout.positions.set(id,{...pos,x:pos.y*1.7,y:pos.x});const links=C.connections(unit,layout,horizontal);assert.equal(links.filter(l=>l.type==='family').length,1);assert.equal(links.filter(l=>l.type==='partner').length,1);assert.equal(links.flatMap(l=>l.relations).filter(r=>r.type==='parent').length,4);assert.deepEqual(links.find(l=>l.type==='family').children,['u3','u4']);}
+const single=unit.map(q=>q.id==='u3'||q.id==='u4'?{...q,parentIds:['u1']}:q);assert(!C.connections(single,C.layout(single,true)).flatMap(l=>l.relations).some(r=>r.type==='parent'&&r.from==='u2'));console.log('PASS v24: sibling family junctions, both orientations, no inferred co-parent');
